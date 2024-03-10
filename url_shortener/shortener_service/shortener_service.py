@@ -25,5 +25,10 @@ class UrlShortenerService:
 
         # Raise exception for invalid URL
 
-    def get_long_url(self, short_url):
+    def get_long_url(self, short_url) -> UrlShortener:
         """Get the original URL for the given short URL."""
+
+        if short_url is not None:
+            return self.url_shortener_repository.get_long_url(short_url)
+
+        # Raise exception for invalid URL

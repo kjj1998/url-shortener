@@ -1,7 +1,8 @@
 """URL shortener repository"""
 
 from url_shortener.repository.models import UrlModel
-from url_shortener.shortener_service.shortener import UrlShortener   
+from url_shortener.shortener_service.shortener import UrlShortener
+
 
 class UrlShortenerRepository:
     """URL shortener repository"""
@@ -16,3 +17,14 @@ class UrlShortenerRepository:
         self.session.commit()
 
         return UrlShortener(**record.dict())
+
+    def get_long_url(self, short_url) -> UrlShortener:
+        """Get the original URL for the given short URL."""
+        url_model: UrlModel = (
+            self.session.query(UrlModel).filter(UrlModel.short_url == short_url).first()
+        )
+
+        if url_model is not None:
+            return UrlShortener(**url_model.dict())
+
+        return None
