@@ -1,4 +1,16 @@
 services:
+  app:
+    container_name: url-shortener
+    image: url-shortener:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    networks:
+      - postgres
+    depends_on:
+      - db
   db:
     container_name: urlshortener-dev-db
     image: postgres:16.2

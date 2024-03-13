@@ -71,7 +71,7 @@ def run_migrations_online() -> None:
     url_tokens = {
         "DB_USER": os.getenv("POSTGRES_USER", "admin"),
         "DB_PW": os.getenv("POSTGRES_PW", "password"),
-        "DB_HOST": "localhost",
+        "DB_HOST": "db",
         "DB_NAME": os.getenv("POSTGRES_DB", "urlshortener"),
     }
 
