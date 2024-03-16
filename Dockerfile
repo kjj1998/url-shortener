@@ -19,12 +19,14 @@ ENV PATH="/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
+RUN apt-get update && apt-get install libpq5 -y
+
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY url_shortener ./url_shortener
 COPY entrypoint.sh ./entrypoint.sh
+COPY .env ./.env
 
-RUN apt-get update && apt-get install libpq5 -y
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]

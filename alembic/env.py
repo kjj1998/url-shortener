@@ -64,14 +64,15 @@ def run_migrations_online() -> None:
 
     """
 
-    parent_directory_path = os.path.dirname(os.getcwd())
-    dotenv_path = os.path.join(parent_directory_path, ".env")
+    dotenv_path = os.path.join(os.getcwd(), ".env")
     load_dotenv(dotenv_path)
 
     url_tokens = {
         "DB_USER": os.getenv("POSTGRES_USER", "admin"),
         "DB_PW": os.getenv("POSTGRES_PW", "password"),
-        "DB_HOST": os.getenv("DB_HOST_DOCKER")
+        "DB_HOST": os.getenv("DB_HOST_K8s")
+        if os.getenv("DB_HOST_K8s")
+        else os.getenv("DB_HOST_DOCKER")
         if os.getenv("DB_HOST_DOCKER")
         else os.getenv("DB_HOST_LOCAL"),
         "DB_NAME": os.getenv("POSTGRES_DB", "urlshortener"),

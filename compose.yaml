@@ -1,7 +1,7 @@
 services:
   app:
     container_name: url-shortener
-    image: url-shortener:latest
+    image: junjiekoh/url-shortener:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,6 +11,8 @@ services:
       - postgres
     depends_on:
       - db
+    environment:
+      - DB_HOST_DOCKER=db
   db:
     container_name: urlshortener-dev-db
     image: postgres:16.2
