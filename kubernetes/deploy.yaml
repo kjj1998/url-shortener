@@ -5,7 +5,7 @@ metadata:
   labels:
     app: url-shortener
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: url-shortener
@@ -16,7 +16,8 @@ spec:
     spec:
       containers:
       - name: url-shortener
-        image: junjiekoh/url-shortener:0.4
+        image: junjiekoh/url-shortener:0.4.1
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         resources:
