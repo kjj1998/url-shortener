@@ -67,16 +67,24 @@ def run_migrations_online() -> None:
     dotenv_path = os.path.join(os.getcwd(), ".env")
     load_dotenv(dotenv_path)
 
-    url_tokens = {
-        "DB_USER": os.getenv("POSTGRES_USER", "admin"),
-        "DB_PW": os.getenv("POSTGRES_PW", "password"),
-        "DB_HOST": os.getenv("DB_HOST_K8s")
-        if os.getenv("DB_HOST_K8s")
-        else os.getenv("DB_HOST_DOCKER")
-        if os.getenv("DB_HOST_DOCKER")
-        else os.getenv("DB_HOST_LOCAL"),
-        "DB_NAME": os.getenv("POSTGRES_DB", "urlshortener"),
-    }
+    if os.getenv("USE_AWS_RDS") and os.getenv("USE_AWS_RDS").lower() == "true":
+        url_tokens = {
+            "DB_USER": os.getenv("POSTGRES_USER_AWS"),
+            "DB_PW": os.getenv("POSTGRES_PW_AWS"),
+            "DB_HOST": os.getenv("DB_HOST_AWS"),
+            "DB_NAME": os.getenv("POSTGRES_DB_AWS"),
+        }
+    else:
+        url_tokens = {
+            "DB_USER": os.getenv("POSTGRES_USER", "admin"),
+            "DB_PW": os.getenv("POSTGRES_PW", "password"),
+            "DB_HOST": os.getenv("DB_HOST_K8s")
+            if os.getenv("DB_HOST_K8s")
+            else os.getenv("DB_HOST_DOCKER")
+            if os.getenv("DB_HOST_DOCKER")
+            else os.getenv("DB_HOST_LOCAL"),
+            "DB_NAME": os.getenv("POSTGRES_DB", "urlshortener"),
+        }
 
     section = config.config_ini_section
     config.set_section_option(section, "DB_USER", url_tokens["DB_USER"])
