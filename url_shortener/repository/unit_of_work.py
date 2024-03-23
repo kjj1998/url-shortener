@@ -1,6 +1,7 @@
 """Unit of work pattern implementation."""
 
 import os
+import redis
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -32,10 +33,15 @@ db_password = (
     else os.getenv("POSTGRES_PW")
 )
 
+redis_host = (
+    os.getenv("REDIS_HOST_AWS")
+    if os.getenv("REDIS_HOST_AWS")
+    else os.getenv("REDIS_HOST_LOCAL")
+)
+
 DB_URL = f"postgresql://{db_user}:{db_password}@{db_host}:5432/urlshortener"
 
 assert DB_URL is not None, "DB_URL environment variable needed."
-
 
 class UnitOfWork:
     """Unit of work pattern implementation."""
@@ -43,6 +49,7 @@ class UnitOfWork:
     def __init__(self):
         self.session_maker = sessionmaker(bind=create_engine(DB_URL))
         self.session = None
+        self.redis_connection = redis.Redis(host=redis_host, port=6379, decode_responses=True)
 
     def __enter__(self):
         self.session = self.session_maker()
