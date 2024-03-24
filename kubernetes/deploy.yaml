@@ -28,5 +28,7 @@ spec:
             cpu: "0.1"
             memory: "128Mi"
         env:
-        - name: DB_HOST_K8s
+        - name: POSTGRES_K8s_HOST
+          value: "host.docker.internal"
+        - name: REDIS_K8s_HOST
           value: "host.docker.internal"

@@ -67,23 +67,15 @@ def run_migrations_online() -> None:
     dotenv_path = os.path.join(os.getcwd(), ".env")
     load_dotenv(dotenv_path)
 
-    if os.getenv("USE_AWS_RDS") and os.getenv("USE_AWS_RDS").lower() == "true":
-        url_tokens = {
-            "DB_USER": os.getenv("POSTGRES_USER_AWS"),
-            "DB_PW": os.getenv("POSTGRES_PW_AWS"),
-            "DB_HOST": os.getenv("DB_HOST_AWS"),
-            "DB_NAME": os.getenv("POSTGRES_DB_AWS"),
-        }
+    if os.getenv("PROD") and os.getenv("PROD").lower() == "true":
+        pass
     else:
         url_tokens = {
-            "DB_USER": os.getenv("POSTGRES_USER", "admin"),
-            "DB_PW": os.getenv("POSTGRES_PW", "password"),
-            "DB_HOST": os.getenv("DB_HOST_K8s")
-            if os.getenv("DB_HOST_K8s")
-            else os.getenv("DB_HOST_DOCKER")
-            if os.getenv("DB_HOST_DOCKER")
-            else os.getenv("DB_HOST_LOCAL"),
-            "DB_NAME": os.getenv("POSTGRES_DB", "urlshortener"),
+            "DB_USER": os.getenv("POSTGRES_DEV_USER"),
+            "DB_PW": os.getenv("POSTGRES_DEV_PW"),
+            "DB_HOST": os.getenv("POSTGRES_K8s_HOST", "POSTGRES_DEV_HOST"),
+            "DB_NAME": os.getenv("POSTGRES_DEV_DB"),
+            "DB_PORT": os.getenv("POSTGRES_DEV_PORT"),
         }
 
     section = config.config_ini_section
@@ -91,6 +83,7 @@ def run_migrations_online() -> None:
     config.set_section_option(section, "DB_PW", url_tokens["DB_PW"])
     config.set_section_option(section, "DB_HOST", url_tokens["DB_HOST"])
     config.set_section_option(section, "DB_NAME", url_tokens["DB_NAME"])
+    config.set_section_option(section, "DB_PORT", url_tokens["DB_PORT"])
 
     connectable = engine_from_config(
         config.get_section(

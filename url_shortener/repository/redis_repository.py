@@ -28,7 +28,6 @@ class UrlShortenerRedisRepository:
         except RedisConnectionError as e:
             print("Redis:", e)
             return None
-        
     # def add(self, long_url, short_url) -> UrlShortener:
     #     """Add a new URL to the database."""
     #     record = UrlModel(long_url=long_url, short_url=short_url)
