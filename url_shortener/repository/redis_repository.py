@@ -19,7 +19,11 @@ class UrlShortenerRedisRepository:
 
     def ping(self) -> bool:
         """Ping the Redis cache."""
-        return self.connection.ping()
+        try:
+            return self.connection.ping()
+        except RedisConnectionError as e:
+            print("Redis:", e)
+            return False
 
     def get(self, key: str) -> str:
         """Get the URL for the given key from the Redis cache."""
@@ -28,21 +32,3 @@ class UrlShortenerRedisRepository:
         except RedisConnectionError as e:
             print("Redis:", e)
             return None
-    # def add(self, long_url, short_url) -> UrlShortener:
-    #     """Add a new URL to the database."""
-    #     record = UrlModel(long_url=long_url, short_url=short_url)
-    #     self.session.add(record)
-    #     self.session.commit()
-
-    #     return UrlShortener(**record.dict())
-
-    # def get_long_url(self, short_url) -> UrlShortener:
-    #     """Get the original URL for the given short URL."""
-    #     url_model: UrlModel = (
-    #         self.session.query(UrlModel).filter(UrlModel.short_url == short_url).first()
-    #     )
-
-    #     if url_model is not None:
-    #         return UrlShortener(**url_model.dict())
-
-    #     return None

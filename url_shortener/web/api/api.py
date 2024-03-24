@@ -43,6 +43,8 @@ def redirect_to_long_url(short_url: str):
         )
         return redirect
 
+    return {"message": "URL not found."}
+
 
 @router.post(
     "/", status_code=status.HTTP_201_CREATED, response_model=GetShortenedUrlSchema
@@ -62,3 +64,20 @@ def shorten_url(long_url: UrlShortenRequest) -> GetShortenedUrlSchema:
         return_payload: GetShortenedUrlSchema = shortened_url.dict()
 
     return return_payload
+
+
+@router.get("/health/storage_health", status_code=status.HTTP_200_OK)
+def storage_health_check():
+    """Health check for in-memory and persistence storage"""
+    with UnitOfWork() as unit_of_work:
+        cache: UrlShortenerRedisRepository = UrlShortenerRedisRepository(
+            unit_of_work.redis_connection
+        )
+        repo: UrlShortenerRepository = UrlShortenerRepository(unit_of_work.session)
+        health_check = {
+            "Database Status": "Online" if repo.check_health() else "Offline",
+            "Cache Status": "Online" if cache.ping() else "Offline",
+        }
+        unit_of_work.commit()
+
+    return health_check

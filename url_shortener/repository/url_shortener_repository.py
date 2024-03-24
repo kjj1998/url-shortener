@@ -1,8 +1,10 @@
 """URL shortener repository"""
 
+from sqlalchemy.exc import DatabaseError
+from sqlalchemy.sql import text
+
 from url_shortener.repository.models import UrlModel
 from url_shortener.shortener_service.shortener import UrlShortener
-
 
 class UrlShortenerRepository:
     """URL shortener repository"""
@@ -28,3 +30,12 @@ class UrlShortenerRepository:
             return UrlShortener(**url_model.dict())
 
         return None
+
+    def check_health(self):
+        """Check the health of the database."""
+        try:
+            self.session.execute(text("SELECT 1"))
+            return True
+        except DatabaseError as e:
+            print("Database:", e)
+            return False
