@@ -1,5 +1,7 @@
 """APIs for the URL shortener app."""
 
+import os
+
 from fastapi import APIRouter, status
 from fastapi.responses import RedirectResponse
 
@@ -81,3 +83,11 @@ def storage_health_check():
         unit_of_work.commit()
 
     return health_check
+
+@router.get("/health/api_health", status_code=status.HTTP_200_OK)
+def api_health_check():
+    """Health check for the API"""
+    return {
+        "API Status": "Online",
+        "Pod Name": os.getenv("HOSTNAME", default="local"),
+    }
