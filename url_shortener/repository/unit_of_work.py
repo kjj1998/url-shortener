@@ -2,6 +2,7 @@
 
 import os
 import redis
+import base64
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,8 +12,16 @@ parent_directory_path = os.path.dirname(os.getcwd())
 dotenv_path = os.path.join(os.getcwd(), ".env")
 load_dotenv(dotenv_path)
 
+DB_URL = ""
+
 if os.getenv("PROD") and os.getenv("PROD").lower() == "true":
-    pass
+    url_tokens = {
+        "DB_USER": os.getenv("DB_USER"),
+        "DB_PW": os.getenv("DB_PW"),
+        "DB_HOST": os.getenv("DB_HOST"),
+        "DB_NAME": os.getenv("DB_NAME"),
+        "DB_PORT": os.getenv("DB_PORT"),
+    }
 else:
     url_tokens = {
         "DB_USER": os.getenv("POSTGRES_DEV_USER"),
@@ -38,8 +47,8 @@ class UnitOfWork:
         self.session_maker = sessionmaker(bind=create_engine(DB_URL))
         self.session = None
         self.redis_connection = redis.Redis(
-            host=url_tokens["REDIS_HOST"],
-            port=int(url_tokens["REDIS_PORT"]),
+            host=url_tokens.get("REDIS_HOST", "localhost"),
+            port=int(url_tokens.get("REDIS_PORT", 6379)),
             decode_responses=True)
 
     def __enter__(self):

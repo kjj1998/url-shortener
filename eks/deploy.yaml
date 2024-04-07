@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: app-url-shortener
-          image: public.ecr.aws/m3p0x7c0/url-shortener:0.4.5
+          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.5.5
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -32,7 +32,12 @@ spec:
             requests:
               cpu: "0.1"
               memory: "128Mi"
+          envFrom:
+            - secretRef:
+                name: db-credentials3
           env:
+            - name: PROD
+              value: "true"
             - name: POSTGRES_K8s_HOST
               value: "host.docker.internal"
             - name: REDIS_K8s_HOST
