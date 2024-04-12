@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: app-url-shortener
-          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.5.5
+          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.5.8
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -35,6 +35,8 @@ spec:
           envFrom:
             - secretRef:
                 name: db-credentials3
+            - secretRef:
+                name: cache-credentials
           env:
             - name: PROD
               value: "true"
