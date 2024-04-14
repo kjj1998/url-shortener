@@ -1,7 +1,6 @@
 """Alembic environment configuration."""
 
 import os
-import base64
 
 from logging.config import fileConfig
 from dotenv import load_dotenv
@@ -57,28 +56,6 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-# def parse_postgresql_connection_string(connection_string):
-#     """Parse the PostgreSQL connection string."""
-#     # Define a regular expression pattern to extract components
-#     pattern = r"postgresql:\/\/(?P<username>.*):(?P<password>.*)@(?P<hostname>.*):(?P<port>\d+)\/(?P<database>.*)" # pylint: disable=line-too-long
-
-#     # Match the pattern against the connection string
-#     match = re.match(pattern, connection_string)
-
-#     if match:
-#         # Extract the components
-#         engine = "postgresql"
-#         username = match.group("username")
-#         password = match.group("password")
-#         hostname = match.group("hostname")
-#         port = match.group("port")
-#         database = match.group("database")
-
-#         return engine, username, password, hostname, port, database
-    
-#     return None
-
-
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
@@ -93,7 +70,7 @@ def run_migrations_online() -> None:
     if os.getenv("PROD") and os.getenv("PROD").lower() == "true":
         # print("db string: ", os.getenv("db-credentials"))
         # _, username, password, hostname, port, database = parse_postgresql_connection_string(os.getenv("db-credentials")) # pylint: disable=line-too-long
-        
+
         url_tokens = {
             "DB_USER": os.getenv("DB_USER"),
             "DB_PW": os.getenv("DB_PW"),
@@ -105,7 +82,7 @@ def run_migrations_online() -> None:
         url_tokens = {
             "DB_USER": os.getenv("POSTGRES_DEV_USER"),
             "DB_PW": os.getenv("POSTGRES_DEV_PW"),
-            "DB_HOST": os.getenv("POSTGRES_K8s_HOST", "POSTGRES_DEV_HOST"),
+            "DB_HOST": os.getenv("POSTGRES_K8s_HOST", os.getenv("POSTGRES_DEV_HOST")),
             "DB_NAME": os.getenv("POSTGRES_DEV_DB"),
             "DB_PORT": os.getenv("POSTGRES_DEV_PORT"),
         }
@@ -127,7 +104,11 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            version_table_schema="shortener_schema",
+        )
 
         with context.begin_transaction():
             context.run_migrations()

@@ -2,7 +2,6 @@
 
 import os
 import redis
-import base64
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

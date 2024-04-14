@@ -17,6 +17,7 @@ def generate_uuid() -> str:
 class UrlModel(Base):  # pylint: disable=too-few-public-methods
     """Url sql model"""
 
+    __table_args__ = {'schema' : 'shortener_schema'}
     __tablename__ = "url"
 
     id = Column(String, primary_key=True, default=generate_uuid)
