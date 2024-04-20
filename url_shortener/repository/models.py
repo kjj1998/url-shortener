@@ -1,6 +1,6 @@
 """This module contains the models for the url shortener"""
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 
 from sqlalchemy import Column, String, DateTime
@@ -23,7 +23,8 @@ class UrlModel(Base):  # pylint: disable=too-few-public-methods
     id = Column(String, primary_key=True, default=generate_uuid)
     long_url = Column(String, nullable=False)
     short_url = Column(String, nullable=False)
-    created = Column(DateTime, default=datetime.utcnow)
+    created = Column(DateTime, default=datetime.now(timezone.utc))
+    username = Column(String, nullable=True)
 
     def dict(self):
         """Render as dictionaries"""
@@ -32,4 +33,5 @@ class UrlModel(Base):  # pylint: disable=too-few-public-methods
             "long_url": self.long_url,
             "short_url": self.short_url,
             "created": self.created,
+            "username": self.username if self.username else None
         }

@@ -14,3 +14,4 @@ class GetShortenedUrlSchema(BaseModel):
     long_url: str
     short_url: str
     created: datetime
+    username: str | None
