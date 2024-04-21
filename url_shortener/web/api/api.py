@@ -23,6 +23,7 @@ from url_shortener.repository.redis_repository import UrlShortenerRedisRepositor
 from url_shortener.exceptions import (
     credentials_exception,
     username_wrong_match_exception,
+    shortened_url_not_found_exception
 )
 
 router = APIRouter()
@@ -53,6 +54,13 @@ async def login_for_access_token(
     response = requests.request(
         "POST", auth_service_url, headers=headers, data=payload, timeout=20
     )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+
     response_dict = response.json()
 
     return Token(**response_dict)
@@ -77,16 +85,17 @@ def redirect_to_long_url(short_url: str):
             )
             return redirect
 
-        long_url: UrlShortener = url_shortener_service.get_long_url(short_url)
+        url_object: UrlShortener = url_shortener_service.get_long_url(short_url)
         unit_of_work.commit()
 
-    if long_url:
+    if url_object:
+        cache.set(short_url, url_object.long_url)
         redirect = RedirectResponse(
-            url=long_url.long_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
+            url=url_object.long_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
         )
         return redirect
 
-    return {"message": "URL not found."}
+    raise shortened_url_not_found_exception
 
 
 @router.post(
