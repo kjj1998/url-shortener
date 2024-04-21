@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: url-shortener
-        image: junjiekoh/url-shortener:0.6.0
+        image: junjiekoh/url-shortener:0.6.4
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -63,7 +63,7 @@ spec:
     spec:
       containers:
       - name: url-shortener-auth
-        image: junjiekoh/url-shortener-auth:0.1.0
+        image: junjiekoh/url-shortener-auth:0.1.2
         imagePullPolicy: Always
         ports:
         - containerPort: 8001
@@ -102,7 +102,7 @@ spec:
       http:
         paths:
           - pathType: Prefix
-            path: /
+            path: /url-shortener
             backend:
               service:
                 name: url-shortener-service
@@ -112,7 +112,7 @@ spec:
       http:
           paths:
             - pathType: Prefix
-              path: /
+              path: /url-shortener-auth
               backend:
                 service:
                   name: url-shortener-auth-service
