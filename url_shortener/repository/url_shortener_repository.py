@@ -52,3 +52,17 @@ class UrlShortenerRepository:
             urls.append(UrlShortener(**url.dict()))
 
         return urls
+
+    def delete_shortened_url_for_user(self, url_id, username):
+        """Delete a shortened URL for the user"""
+        url_model: UrlModel = (
+            self.session.query(UrlModel)
+            .filter(UrlModel.id == url_id, UrlModel.username == username)
+            .first()
+        )
+
+        if url_model is not None:
+            self.session.delete(url_model)
+            self.session.commit()
+        else:
+            raise Exception("URL not found")

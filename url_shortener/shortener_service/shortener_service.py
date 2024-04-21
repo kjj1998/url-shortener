@@ -6,6 +6,7 @@ import base62
 
 from url_shortener.repository.url_shortener_repository import UrlShortenerRepository
 from url_shortener.shortener_service.shortener import UrlShortener
+from url_shortener.exceptions import shortened_url_not_found_exception
 
 
 class UrlShortenerService:
@@ -14,7 +15,9 @@ class UrlShortenerService:
     def __init__(self, url_shortener_repository: UrlShortenerRepository):
         self.url_shortener_repository: UrlShortenerRepository = url_shortener_repository
 
-    def shorten_url(self, long_url: AnyUrl, username: str | None = None) -> UrlShortener:
+    def shorten_url(
+        self, long_url: AnyUrl, username: str | None = None
+    ) -> UrlShortener:
         """Shorten the given URL."""
 
         if long_url is not None:
@@ -38,3 +41,13 @@ class UrlShortenerService:
 
         if username is not None:
             return self.url_shortener_repository.get_urls_by_user(username)
+
+    def delete_shortened_url_for_user(self, url_id, username):
+        """Delete a shortened URL for the user"""
+
+        try:
+            self.url_shortener_repository.delete_shortened_url_for_user(
+                url_id, username
+            )
+        except Exception as exc:
+            raise shortened_url_not_found_exception from exc

@@ -6,15 +6,21 @@ from pydantic import BaseModel, AnyUrl
 
 class UrlShortenRequest(BaseModel):
     """Schema for the request to shorten a URL."""
+
     url: AnyUrl
 
-class GetShortenedUrlSchema(BaseModel):
-    """Shortene URL schema."""
+class Url(BaseModel):
+    """Shortened URL schema."""
+
     id: str
+    username: str | None
+
+class GetUrl(Url):
+    """Shortened URL schema."""
+
     long_url: str
     short_url: str
     created: datetime
-    username: str | None
 
 class Token(BaseModel):
     """Schema for the JWT token response"""

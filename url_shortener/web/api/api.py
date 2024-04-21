@@ -13,8 +13,9 @@ from url_shortener.repository.unit_of_work import UnitOfWork
 from url_shortener.repository.url_shortener_repository import UrlShortenerRepository
 from url_shortener.web.api.schemas import (
     UrlShortenRequest,
-    GetShortenedUrlSchema,
+    GetUrl,
     Token,
+    Url,
 )
 from url_shortener.shortener_service.shortener_service import UrlShortenerService
 from url_shortener.shortener_service.shortener import UrlShortener
@@ -91,9 +92,9 @@ def redirect_to_long_url(short_url: str):
 @router.post(
     "/shorten_url",
     status_code=status.HTTP_201_CREATED,
-    response_model=GetShortenedUrlSchema,
+    response_model=GetUrl,
 )
-def shorten_url(long_url: UrlShortenRequest) -> GetShortenedUrlSchema:
+def shorten_url(long_url: UrlShortenRequest) -> GetUrl:
     """Shorten the given URL."""
 
     with UnitOfWork() as unit_of_work:
@@ -106,7 +107,7 @@ def shorten_url(long_url: UrlShortenRequest) -> GetShortenedUrlSchema:
         unit_of_work.commit()
         cache.set(shortened_url.short_url, shortened_url.long_url)
 
-        return_payload: GetShortenedUrlSchema = shortened_url.dict()
+        return_payload: GetUrl = shortened_url.dict()
 
     return return_payload
 
@@ -114,11 +115,11 @@ def shorten_url(long_url: UrlShortenRequest) -> GetShortenedUrlSchema:
 @router.post(
     "/shorten_url_auth",
     status_code=status.HTTP_201_CREATED,
-    response_model=GetShortenedUrlSchema,
+    response_model=GetUrl,
 )
 def shorten_url_auth(
     long_url: UrlShortenRequest, token: Annotated[str, Depends(oauth2_scheme)]
-) -> GetShortenedUrlSchema:
+) -> GetUrl:
     """Shorten URLs for logged in users"""
 
     try:
@@ -141,26 +142,53 @@ def shorten_url_auth(
         unit_of_work.commit()
         cache.set(shortened_url.short_url, shortened_url.long_url)
 
-        return_payload: GetShortenedUrlSchema = shortened_url.dict()
+        return_payload: GetUrl = shortened_url.dict()
 
     return return_payload
+
+
+@router.delete("/shorten_url_auth", status_code=status.HTTP_204_NO_CONTENT)
+def delete_shortened_url_for_user(
+    url_object: Url, token: Annotated[str, Depends(oauth2_scheme)]
+):
+    """Deletes a shortened URL for the user"""
+
+    try:
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"))
+        payload_username: str = payload.get("sub")
+        if payload_username is None:
+            raise credentials_exception
+        if payload_username != url_object.username:
+            raise username_wrong_match_exception
+    except JWTError as exc:
+        raise credentials_exception from exc
+
+    with UnitOfWork() as unit_of_work:
+        repo: UrlShortenerRepository = UrlShortenerRepository(unit_of_work.session)
+        url_shortener_service: UrlShortenerService = UrlShortenerService(repo)
+        url_shortener_service.delete_shortened_url_for_user(
+            url_object.id, url_object.username
+        )
+        unit_of_work.commit()
+
+    return None
 
 
 @router.get("/users/{username}", status_code=status.HTTP_200_OK)
 def get_urls_by_user(
     username: str, token: Annotated[str, Depends(oauth2_scheme)]
-) -> list[GetShortenedUrlSchema]:
+) -> list[GetUrl]:
     """Get all URLs for the given user"""
 
     try:
         payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"))
         payload_username: str = payload.get("sub")
-        
+
         if payload_username is None:
             raise credentials_exception
         if payload_username != username:
             raise username_wrong_match_exception
-        
+
     except JWTError as exc:
         raise credentials_exception from exc
 
@@ -170,7 +198,7 @@ def get_urls_by_user(
         urls = url_shortener_service.get_urls_by_user(username)
         unit_of_work.commit()
 
-    return [GetShortenedUrlSchema(**url.dict()) for url in urls]
+    return [GetUrl(**url.dict()) for url in urls]
 
 
 @router.get("/health/storage_health", status_code=status.HTTP_200_OK)
