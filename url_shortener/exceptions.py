@@ -19,3 +19,8 @@ username_wrong_match_exception = HTTPException(
     detail="username given does not match with username from token",
     headers={"WWW-Authenticate": "Bearer"},
 )
+
+shortened_url_not_found_exception = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND,
+    detail="Shortened URL not found",
+)
