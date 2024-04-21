@@ -19,7 +19,10 @@ from url_shortener.web.api.schemas import (
 from url_shortener.shortener_service.shortener_service import UrlShortenerService
 from url_shortener.shortener_service.shortener import UrlShortener
 from url_shortener.repository.redis_repository import UrlShortenerRedisRepository
-from url_shortener.exceptions import credentials_exception
+from url_shortener.exceptions import (
+    credentials_exception,
+    username_wrong_match_exception,
+)
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -29,7 +32,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
-    """Get the access token for the user from the authentication service, 
+    """Get the access token for the user from the authentication service,
     only for testing purposes, not used in production
     """
 
@@ -46,7 +49,9 @@ async def login_for_access_token(
     payload = f"username={username}&password={password}"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
-    response = requests.request("POST", auth_service_url, headers=headers, data=payload, timeout=20)
+    response = requests.request(
+        "POST", auth_service_url, headers=headers, data=payload, timeout=20
+    )
     response_dict = response.json()
 
     return Token(**response_dict)
@@ -66,7 +71,6 @@ def redirect_to_long_url(short_url: str):
         long_url: str = cache.get(short_url)
 
         if long_url:
-            print("Cache hit")
             redirect = RedirectResponse(
                 url=long_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
             )
@@ -140,6 +144,33 @@ def shorten_url_auth(
         return_payload: GetShortenedUrlSchema = shortened_url.dict()
 
     return return_payload
+
+
+@router.get("/users/{username}", status_code=status.HTTP_200_OK)
+def get_urls_by_user(
+    username: str, token: Annotated[str, Depends(oauth2_scheme)]
+) -> list[GetShortenedUrlSchema]:
+    """Get all URLs for the given user"""
+
+    try:
+        payload = jwt.decode(token, os.getenv("SECRET_KEY"), os.getenv("ALGORITHM"))
+        payload_username: str = payload.get("sub")
+        
+        if payload_username is None:
+            raise credentials_exception
+        if payload_username != username:
+            raise username_wrong_match_exception
+        
+    except JWTError as exc:
+        raise credentials_exception from exc
+
+    with UnitOfWork() as unit_of_work:
+        repo: UrlShortenerRepository = UrlShortenerRepository(unit_of_work.session)
+        url_shortener_service: UrlShortenerService = UrlShortenerService(repo)
+        urls = url_shortener_service.get_urls_by_user(username)
+        unit_of_work.commit()
+
+    return [GetShortenedUrlSchema(**url.dict()) for url in urls]
 
 
 @router.get("/health/storage_health", status_code=status.HTTP_200_OK)

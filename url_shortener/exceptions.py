@@ -13,3 +13,9 @@ authentication_exception = HTTPException(
     detail="Incorrect username or password",
     headers={"WWW-Authenticate": "Bearer"},
 )
+
+username_wrong_match_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="username given does not match with username from token",
+    headers={"WWW-Authenticate": "Bearer"},
+)

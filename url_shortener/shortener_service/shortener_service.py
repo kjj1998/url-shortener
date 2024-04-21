@@ -32,3 +32,9 @@ class UrlShortenerService:
             return self.url_shortener_repository.get_long_url(short_url)
 
         # Raise exception for invalid URL
+
+    def get_urls_by_user(self, username) -> list[UrlShortener]:
+        """Get all URLs for the given user."""
+
+        if username is not None:
+            return self.url_shortener_repository.get_urls_by_user(username)

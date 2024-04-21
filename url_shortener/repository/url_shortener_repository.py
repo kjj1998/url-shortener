@@ -6,6 +6,7 @@ from sqlalchemy.sql import text
 from url_shortener.repository.models import UrlModel
 from url_shortener.shortener_service.shortener import UrlShortener
 
+
 class UrlShortenerRepository:
     """URL shortener repository"""
 
@@ -39,3 +40,15 @@ class UrlShortenerRepository:
         except DatabaseError as e:
             print("Database:", e)
             return False
+
+    def get_urls_by_user(self, username) -> list[UrlShortener]:
+        """Get all URLs for the given user."""
+        url_models = (
+            self.session.query(UrlModel).filter(UrlModel.username == username).all()
+        )
+
+        urls = []
+        for url in url_models:
+            urls.append(UrlShortener(**url.dict()))
+
+        return urls
