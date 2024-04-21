@@ -14,14 +14,14 @@ class UrlShortenerService:
     def __init__(self, url_shortener_repository: UrlShortenerRepository):
         self.url_shortener_repository: UrlShortenerRepository = url_shortener_repository
 
-    def shorten_url(self, long_url: AnyUrl) -> UrlShortener:
+    def shorten_url(self, long_url: AnyUrl, username: str | None = None) -> UrlShortener:
         """Shorten the given URL."""
 
         if long_url is not None:
             gen: SnowflakeGenerator = SnowflakeGenerator(42)
             unique_id: str = next(gen)
             short_url: str = base62.encode(unique_id)
-            return self.url_shortener_repository.add(str(long_url), short_url)
+            return self.url_shortener_repository.add(str(long_url), short_url, username)
 
         # Raise exception for invalid URL
 

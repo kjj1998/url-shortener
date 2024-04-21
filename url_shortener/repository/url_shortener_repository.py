@@ -12,9 +12,9 @@ class UrlShortenerRepository:
     def __init__(self, session):
         self.session = session
 
-    def add(self, long_url, short_url) -> UrlShortener:
+    def add(self, long_url, short_url, username) -> UrlShortener:
         """Add a new URL to the database."""
-        record = UrlModel(long_url=long_url, short_url=short_url)
+        record = UrlModel(long_url=long_url, short_url=short_url, username=username)
         self.session.add(record)
         self.session.commit()
 
