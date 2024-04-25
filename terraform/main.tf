@@ -62,6 +62,25 @@ resource "aws_subnet" "private_subnet_1" {
     Name = "url-shortener-cluster-vpc-subnet-private1-ap-southeast-1a-iac"
   }
 }
+resource "aws_subnet" "private_subnet_2" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.160.0/19"
+  availability_zone = "ap-southeast-1b"
+
+  tags = {
+    Name = "url-shortener-cluster-vpc-subnet-private2-ap-southeast-1b-iac"
+  }
+}
+resource "aws_subnet" "private_subnet_3" {
+  vpc_id            = aws_vpc.vpc.id
+  cidr_block        = "10.0.192.0/19"
+  availability_zone = "ap-southeast-1c"
+
+  tags = {
+    Name = "url-shortener-cluster-vpc-subnet-private3-ap-southeast-1c-iac"
+  }
+}
+
 
 # Internet gateway
 resource "aws_internet_gateway" "igw" {
@@ -119,6 +138,30 @@ resource "aws_route_table" "private_rtb_1" {
     Name = "url-shortener-cluster-vpc-rtb-private1-ap-southeast-1a-iac"
   }
 }
+resource "aws_route_table" "private_rtb_2" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.private_subnet_1_nat_gateway.id
+  }
+
+  tags = {
+    Name = "url-shortener-cluster-vpc-rtb-private2-ap-southeast-1b-iac"
+  }
+}
+resource "aws_route_table" "private_rtb_3" {
+  vpc_id = aws_vpc.vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.private_subnet_1_nat_gateway.id
+  }
+
+  tags = {
+    Name = "url-shortener-cluster-vpc-rtb-private3-ap-southeast-1c-iac"
+  }
+}
 
 # Route associations
 resource "aws_route_table_association" "public_subnet_1_public_rtb_association" {
@@ -136,4 +179,12 @@ resource "aws_route_table_association" "public_subnet_3_public_rtb_association" 
 resource "aws_route_table_association" "private_subnet_1_private_rtb_association" {
   subnet_id      = aws_subnet.private_subnet_1.id
   route_table_id = aws_route_table.private_rtb_1.id
+}
+resource "aws_route_table_association" "private_subnet_2_private_rtb_association" {
+  subnet_id      = aws_subnet.private_subnet_2.id
+  route_table_id = aws_route_table.private_rtb_2.id
+}
+resource "aws_route_table_association" "private_subnet_3_private_rtb_association" {
+  subnet_id      = aws_subnet.private_subnet_3.id
+  route_table_id = aws_route_table.private_rtb_3.id
 }
