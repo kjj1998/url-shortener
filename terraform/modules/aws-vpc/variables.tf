@@ -44,11 +44,11 @@ variable "nat_gateway_name" {
 }
 
 variable "public_subnet_route_table_name" {
-    description = "Name of the public subnet route table"
-    type        = string
+  description = "Name of the public subnet route table"
+  type        = string
 }
 
 variable "private_subnet_route_table_name" {
-    description = "Name of the private subnet route table"
-    type        = string
+  description = "Name of the private subnet route table"
+  type        = string
 }

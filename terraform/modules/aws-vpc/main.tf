@@ -16,8 +16,8 @@ resource "aws_subnet" "public_subnet_1" {
   availability_zone = "ap-southeast-1a"
 
   tags = {
-    Name = var.public_subnet_1_name
-    # "kubernetes.io/role/elb" = "1"
+    Name                     = var.public_subnet_1_name,
+    "kubernetes.io/role/elb" = "1"
   }
 }
 resource "aws_subnet" "public_subnet_2" {
@@ -26,7 +26,8 @@ resource "aws_subnet" "public_subnet_2" {
   availability_zone = "ap-southeast-1b"
 
   tags = {
-    Name = var.public_subnet_2_name
+    Name                     = var.public_subnet_2_name,
+    "kubernetes.io/role/elb" = "1"
   }
 }
 resource "aws_subnet" "public_subnet_3" {
@@ -35,7 +36,8 @@ resource "aws_subnet" "public_subnet_3" {
   availability_zone = "ap-southeast-1c"
 
   tags = {
-    Name = var.public_subnet_3_name
+    Name                     = var.public_subnet_3_name,
+    "kubernetes.io/role/elb" = "1"
   }
 }
 
@@ -85,8 +87,8 @@ resource "aws_eip" "nat_gateway_1_eip" {
 # Nat gateways
 resource "aws_nat_gateway" "private_subnet_nat_gateway" {
   connectivity_type = "public"
-  subnet_id = aws_subnet.private_subnet_1.id
-  allocation_id = aws_eip.nat_gateway_1_eip.id
+  subnet_id         = aws_subnet.private_subnet_1.id
+  allocation_id     = aws_eip.nat_gateway_1_eip.id
 
   tags = {
     Name = var.nat_gateway_name
