@@ -5,8 +5,9 @@ import os
 from logging.config import fileConfig
 from dotenv import load_dotenv
 
-from sqlalchemy import engine_from_config
+from sqlalchemy import MetaData, engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.schema import CreateSchema
 from url_shortener.repository.models import Base
 
 from alembic import context
@@ -103,11 +104,17 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
+    schema_name = os.getenv("POSTGRES_SCHEMA_NAME", "shortener_schema")
+
+    with connectable.connect() as connection:
+        connection.execute(CreateSchema(schema_name, if_not_exists=True))
+        connection.commit()
+
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
             target_metadata=target_metadata,
-            version_table_schema="shortener_schema",
+            version_table_schema=schema_name,
         )
 
         with context.begin_transaction():

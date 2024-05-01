@@ -17,9 +17,9 @@ services:
     container_name: urlshortener-dev-db
     image: postgres:16.2
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PW}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_DEV_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_DEV_PW}
+      - POSTGRES_DB=${POSTGRES_DEV_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -41,8 +41,8 @@ services:
     container_name: pgadmin
     image: dpage/pgadmin4:latest
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEV_MAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEV_PW}
     ports:
       - "5050:80"
     volumes:
