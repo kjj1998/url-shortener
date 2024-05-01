@@ -5,7 +5,7 @@ import os
 from logging.config import fileConfig
 from dotenv import load_dotenv
 
-from sqlalchemy import MetaData, engine_from_config
+from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from sqlalchemy.schema import CreateSchema
 from url_shortener.repository.models import Base
