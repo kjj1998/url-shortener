@@ -87,7 +87,7 @@ resource "aws_iam_role_policy_attachment" "aws-eks-worker-node-policy-attachment
 resource "aws_eks_node_group" "node_group" {
   cluster_name    = aws_eks_cluster.cluster.name
   node_group_name = "url-shortener-node-group-iac"
-  node_role_arn   = aws_iam_role.cluster_iam_role.arn
+  node_role_arn   = aws_iam_role.node_group_iam_role.arn
 
   scaling_config {
     desired_size = 2
@@ -113,11 +113,3 @@ resource "aws_eks_node_group" "node_group" {
     aws_iam_role_policy_attachment.aws-eks-worker-node-policy-attachment
   ]
 }
-
-# output "endpoint" {
-#   value = aws_eks_cluster.example.endpoint
-# }
-
-# output "kubeconfig-certificate-authority-data" {
-#   value = aws_eks_cluster.example.certificate_authority[0].data
-# }
