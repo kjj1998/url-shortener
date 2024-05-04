@@ -22,3 +22,8 @@ variable "elasticache_replication_group_id" {
   description = "The ID of the elasticache replication group"
   type        = string
 }
+
+variable "cluster_security_group_id" {
+  description = "The ID of the security group for the cluster"
+  type        = string
+}

@@ -4,6 +4,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "5.48.0"
     }
+    tls = {
+      source = "hashicorp/tls"
+      version = "4.0.5"
+    }
   }
 }
 
@@ -36,6 +40,7 @@ module "elasticache" {
   elasticache_security_group_name  = "url-shortener-cache-security-group-iac"
   elasticache_replication_group_id = "url-shortener-cache-non-cluster-iac"
   elasticache_subnet_group_name    = "url-shortener-cache-subnet-group-iac"
+  cluster_security_group_id = module.eks.cluster_security_group
 }
 
 module "rds" {
@@ -59,4 +64,8 @@ module "eks" {
     module.vpc.private_subnet_1_id,
     module.vpc.private_subnet_2_id,
   ]
+}
+
+output "identity" {
+  value = module.eks.identity
 }
