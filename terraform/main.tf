@@ -67,10 +67,6 @@ module "eks" {
   ]
 }
 
-# output "identity" {
-#   value = module.eks.identity
-# }
-
 data "aws_eks_cluster_auth" "cluster" {
   name = module.eks.cluster_name
 }
@@ -83,6 +79,7 @@ provider "helm" {
   }
 }
 
+# Remember to remove created load balancer because it is not managed by terraform
 module "alb" {
   source                   = "./modules/aws-alb"
   cluster_name             = module.eks.cluster_name
