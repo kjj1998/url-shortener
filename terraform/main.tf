@@ -5,7 +5,7 @@ terraform {
       version = "5.48.0"
     }
     tls = {
-      source = "hashicorp/tls"
+      source  = "hashicorp/tls"
       version = "4.0.5"
     }
   }
@@ -15,6 +15,7 @@ provider "aws" {
   region  = var.aws_region
   profile = "admin-1"
 }
+
 module "vpc" {
   source                            = "./modules/aws-vpc"
   vpc_name                          = "url-shortener-cluster-vpc-iac"
@@ -40,7 +41,7 @@ module "elasticache" {
   elasticache_security_group_name  = "url-shortener-cache-security-group-iac"
   elasticache_replication_group_id = "url-shortener-cache-non-cluster-iac"
   elasticache_subnet_group_name    = "url-shortener-cache-subnet-group-iac"
-  cluster_security_group_id = module.eks.cluster_security_group
+  cluster_security_group_id        = module.eks.cluster_security_group
 }
 
 module "rds" {
@@ -66,6 +67,29 @@ module "eks" {
   ]
 }
 
-output "identity" {
-  value = module.eks.identity
+# output "identity" {
+#   value = module.eks.identity
+# }
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    token                  = data.aws_eks_cluster_auth.cluster.token
+    cluster_ca_certificate = base64decode(module.eks.cluster_ca_cert)
+  }
+}
+
+module "alb" {
+  source                   = "./modules/aws-alb"
+  cluster_name             = module.eks.cluster_name
+  region                   = "ap-southeast-1"
+  namespace                = "kube-system"
+  alb_service_account_name = "aws-load-balancer-controller3"
+  helm_chart_name          = "aws-load-balancer-controller"
+  helm_chart_release_name  = "aws-load-balancer-controller"
+  helm_chart_version       = "1.7.2"
 }

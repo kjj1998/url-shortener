@@ -114,53 +114,53 @@ resource "aws_eks_node_group" "node_group" {
   ]
 }
 
-data "tls_certificate" "cluster" {
-  url = aws_eks_cluster.cluster.identity.0.oidc.0.issuer
-}
+# data "tls_certificate" "cluster" {
+#   url = aws_eks_cluster.cluster.identity.0.oidc.0.issuer
+# }
 
-resource "aws_iam_openid_connect_provider" "cluster" {
-  client_id_list = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.cluster.certificates.0.sha1_fingerprint]
-  url = aws_eks_cluster.cluster.identity.0.oidc.0.issuer
-}
+# resource "aws_iam_openid_connect_provider" "cluster" {
+#   client_id_list = ["sts.amazonaws.com"]
+#   thumbprint_list = [data.tls_certificate.cluster.certificates.0.sha1_fingerprint]
+#   url = aws_eks_cluster.cluster.identity.0.oidc.0.issuer
+# }
 
-data "aws_caller_identity" "current" {}
+# data "aws_caller_identity" "current" {}
 
-# IAM role for AWS Load Balancer Controller
-resource "aws_iam_role" "alb_iam_role" {
-  name = "AmazonEKSLoadBalancerControllerRole3"
+# # IAM role for AWS Load Balancer Controller
+# resource "aws_iam_role" "alb_iam_role" {
+#   name = "AmazonEKSLoadBalancerControllerRole3"
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
-  assume_role_policy = jsonencode({
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Allow",
-            "Principal": {
-                "Federated": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}"
-            },
-            "Action": "sts:AssumeRoleWithWebIdentity",
-            "Condition": {
-                "StringEquals": {
-                    "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller3",
-                    "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:aud": "sts.amazonaws.com"
-                }
-            }
-            }
-        ]
-    })
+#   # Terraform's "jsonencode" function converts a
+#   # Terraform expression result to valid JSON syntax.
+#   assume_role_policy = jsonencode({
+#         "Version": "2012-10-17",
+#         "Statement": [
+#             {
+#                 "Effect": "Allow",
+#             "Principal": {
+#                 "Federated": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}"
+#             },
+#             "Action": "sts:AssumeRoleWithWebIdentity",
+#             "Condition": {
+#                 "StringEquals": {
+#                     "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:sub": "system:serviceaccount:kube-system:aws-load-balancer-controller3",
+#                     "${replace(aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")}:aud": "sts.amazonaws.com"
+#                 }
+#             }
+#             }
+#         ]
+#     })
 
-  tags = {
-    "alpha.eksctl.io/cluster-name" = aws_eks_cluster.cluster.name
-    "alpha.eksctl.io/iamserviceaccount-name" = "kube-system/aws-load-balancer-controller3"
-    "alpha.eksctl.io/eksctl-version" = "0.175.0"
-    "eksctl.cluster.k8s.io/v1alpha1/cluster-name" = aws_eks_cluster.cluster.name
-  }
-}
+#   tags = {
+#     "alpha.eksctl.io/cluster-name" = aws_eks_cluster.cluster.name
+#     "alpha.eksctl.io/iamserviceaccount-name" = "kube-system/aws-load-balancer-controller3"
+#     "alpha.eksctl.io/eksctl-version" = "0.175.0"
+#     "eksctl.cluster.k8s.io/v1alpha1/cluster-name" = aws_eks_cluster.cluster.name
+#   }
+# }
 
-# AWS Load Balancer Controller IAM role policy attachment
-resource "aws_iam_role_policy_attachment" "aws-load-balancer-controller-policy-attachment" {
-  role       = aws_iam_role.alb_iam_role.name
-  policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/AWSLoadBalancerControllerIAMPolicy"
-}
+# # AWS Load Balancer Controller IAM role policy attachment
+# resource "aws_iam_role_policy_attachment" "aws-load-balancer-controller-policy-attachment" {
+#   role       = aws_iam_role.alb_iam_role.name
+#   policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/AWSLoadBalancerControllerIAMPolicy"
+# }
