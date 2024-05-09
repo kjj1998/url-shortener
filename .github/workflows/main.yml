@@ -57,7 +57,7 @@ jobs:
       
       # Test bash script
       - name: Test bash script
-        working-directory: ./scripts
+        working-directory: scripts
         run: ./run.sh
 
     #   # On push to "master", build or change infrastructure according to Terraform configuration files
