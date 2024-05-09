@@ -20,7 +20,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.aws_region
+  region = var.aws_region
 }
 
 module "vpc" {
@@ -97,5 +97,5 @@ module "alb" {
   helm_chart_release_name  = "aws-load-balancer-controller"
   helm_chart_version       = "1.7.2"
 
-  depends_on = [ module.eks ]
+  depends_on = [module.eks]
 }
