@@ -9,6 +9,15 @@ terraform {
       version = "4.0.5"
     }
   }
+
+  backend "s3" {
+    bucket         = "terraform-remote-state-url-shortener"
+    key            = "global/s3/terraform.tfstate"
+    region         = "ap-southeast-1"
+    dynamodb_table = "terraform-remote-locks-url-shortener"
+    encrypt        = true
+    profile        = "admin-1"
+  }
 }
 
 provider "aws" {
@@ -89,4 +98,6 @@ module "alb" {
   helm_chart_name          = "aws-load-balancer-controller"
   helm_chart_release_name  = "aws-load-balancer-controller"
   helm_chart_version       = "1.7.2"
+
+  depends_on = [ module.eks ]
 }
