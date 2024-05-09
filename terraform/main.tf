@@ -16,7 +16,6 @@ terraform {
     region         = "ap-southeast-1"
     dynamodb_table = "terraform-remote-locks-url-shortener"
     encrypt        = true
-    profile        = "admin-1"
   }
 }
 
