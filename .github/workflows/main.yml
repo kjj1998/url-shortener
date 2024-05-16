@@ -53,7 +53,8 @@ jobs:
           if [ "${{ env.LATEST_TAG }}" = "v0.0.0" ]; then
             NEW_TAG="v1.0.0"
           else
-            NEW_TAG=$(echo ${{ env.LATEST_TAG }} | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
+            BASE_VERSION=$(echo ${{ env.LATEST_TAG }} | sed 's/^v//')
+            NEW_TAG="v$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')"
           fi
           echo $NEW_TAG
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
