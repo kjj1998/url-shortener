@@ -58,6 +58,12 @@ jobs:
           fi
           echo $NEW_TAG
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+      
+      - name: Tag the current commit
+        id: tag_commit
+        run: |
+          git tag -a ${{ env.NEW_TAG }} -m "Release version ${{ env.NEW_TAG }}"
+          git push origin ${{ env.NEW_TAG }}
 
       # - name: Build the Docker image
       #   run: docker build -t url-shortener:0.6.7 .
