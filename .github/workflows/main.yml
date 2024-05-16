@@ -41,9 +41,18 @@ jobs:
       - name: Build the Docker image
         run: docker build -t url-shortener:0.6.7 .
 
-      # Hello from AWS: WhoAmI
-      - name: Sts GetCallerIdentity
-        run: aws sts get-caller-identity
+      # # Hello from AWS: WhoAmI
+      # - name: Sts GetCallerIdentity
+      #   run: aws sts get-caller-identity
+
+      - name: Authenticate Docker client to AWS ECR
+        run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com && docker tag url-shortener:0.6.7 ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/url-shortener:0.6.7
+
+      - name: Tag the Docker image for AWS ECR
+        run: docker tag url-shortener:0.6.7 ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/url-shortener:0.6.7
+
+      - name: Push the tagged image to AWS ECR
+        run: docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/url-shortener:0.6.7
 
       # - name: Login to Docker Hub
       #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
