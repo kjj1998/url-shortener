@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.0.1
@@ -53,6 +55,7 @@ jobs:
           else
             NEW_TAG=$(echo ${{ env.LATEST_TAG }} | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
           fi
+          echo $NEW_TAG
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
       # - name: Build the Docker image
