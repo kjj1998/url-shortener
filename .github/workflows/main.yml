@@ -79,6 +79,8 @@ jobs:
         run: |
           git tag -a ${{ env.NEW_TAG }} -m "Release version ${{ env.NEW_TAG }}"
           git push origin ${{ env.NEW_TAG }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # - name: Build the Docker image
       #   run: docker build -t url-shortener:0.6.7 .
