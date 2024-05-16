@@ -1,5 +1,5 @@
-# Workflow to deploy changes for URL shortener to AWS
-name: Deploy changes for URL shortener to AWS
+# Workflow to build image of url shortener and deploy to AWS EKS
+name: Deploy changes for URL shortener to AWS EKS
 run-name: ${{ github.actor }} is deploying changes for URL shortener
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
@@ -7,21 +7,22 @@ on:
   push:
     branches: [ main ]
 env:
-  AWS_REGION : ap-southeast-1 #Change to reflect your Region
+  AWS_REGION : ap-southeast-1 # Change to reflect your Region
+  AWS_ACCOUNT_ID: 271407076537 # Change to reflect your AWS Account ID
 
 # Permission can be added at job level or workflow level    
 permissions:
       id-token: write   # This is required for requesting the JWT
       contents: read    # This is required for actions/checkout
 jobs:
-  terraform:
-    name: 'Terraform'
+  build_image:
+    name: 'Build image of URL shortener'
     runs-on: ubuntu-latest
 
     defaults:
       run:
         shell: bash
-        working-directory: ./terraform
+        working-directory: .
 
     steps:
       - name: Git clone the repository
@@ -30,35 +31,59 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.0.1
         with:
-          role-to-assume: arn:aws:iam::271407076537:role/GitHubAction-url-shortener #change to reflect your IAM role’s ARN
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubAction-url-shortener # change to reflect your IAM role’s ARN
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ env.AWS_REGION }}
-      
+
+      - name: Build the Docker image
+        run: docker build -t url-shortener:0.6.7 .
+
       # Hello from AWS: WhoAmI
       - name: Sts GetCallerIdentity
         run: aws sts get-caller-identity
 
-      - name: Setup Terraform with specified version on the runner
-        uses:  hashicorp/setup-terraform@v3.0.0
-        with:
-          terraform_version: "1.7.0"
-      
-      # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-      - name: Terraform init
-        run: terraform init
+      # - name: Login to Docker Hub
+      #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      # Checks that all Terraform configuration files adhere to a canonical format
-      - name: Terraform Format
-        run: terraform fmt -check
+      # - name: Push the Docker image to Docker Hub
+      #   run: docker tag url-shortener ${{ secrets.DOCKER_USERNAME }}/url-shortener:latest && docker push ${{ secrets.DOCKER_USERNAME }}/url-shortener:latest
 
-      # Generates an execution plan for Terraform
-      - name: Terraform Plan
-        run: terraform plan -input=false
+    # steps:
+    #   - name: Git clone the repository
+    #     uses: actions/checkout@v4
+
+    #   - name: Configure AWS Credentials
+    #     uses: aws-actions/configure-aws-credentials@v4.0.1
+    #     with:
+    #       role-to-assume: arn:aws:iam::271407076537:role/GitHubAction-url-shortener #change to reflect your IAM role’s ARN
+    #       role-session-name: GitHub_to_AWS_via_FederatedOIDC
+    #       aws-region: ${{ env.AWS_REGION }}
       
-      # Test bash script
-      - name: Test bash script
-        working-directory: scripts
-        run: chmod +x ./run.sh && ./run.sh
+    #   # Hello from AWS: WhoAmI
+    #   - name: Sts GetCallerIdentity
+    #     run: aws sts get-caller-identity
+
+    #   - name: Setup Terraform with specified version on the runner
+    #     uses:  hashicorp/setup-terraform@v3.0.0
+    #     with:
+    #       terraform_version: "1.7.0"
+      
+    #   # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    #   - name: Terraform init
+    #     run: terraform init
+
+    #   # Checks that all Terraform configuration files adhere to a canonical format
+    #   - name: Terraform Format
+    #     run: terraform fmt -check
+
+    #   # Generates an execution plan for Terraform
+    #   - name: Terraform Plan
+    #     run: terraform plan -input=false
+      
+    #   # Test bash script
+    #   - name: Test bash script
+    #     working-directory: scripts
+    #     run: chmod +x ./run.sh && ./run.sh
 
     #   # On push to "master", build or change infrastructure according to Terraform configuration files
     #   # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
