@@ -41,9 +41,19 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          TAG=$(git describe --tags --abbrev=0)
           echo $TAG
           echo "LATEST_TAG=$TAG" >> $GITHUB_ENV
+      
+      - name: Increment tag
+        id: increment_tag
+        run: |
+          if [ "${{ env.LATEST_TAG }}" = "v0.0.0" ]; then
+            NEW_TAG="v1.0.0"
+          else
+            NEW_TAG=$(echo ${{ env.LATEST_TAG }} | awk -F. '{printf "v%d.%d.%d", $1, $2, $3+1}')
+          fi
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
 
       # - name: Build the Docker image
       #   run: docker build -t url-shortener:0.6.7 .
