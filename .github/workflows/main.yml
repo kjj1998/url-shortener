@@ -13,6 +13,7 @@ env:
   NEW_TAG: v0.0.0
   ECR_REPO_NAME: url-shortener
   LATEST_IMAGE_TAG: 0.0.0
+  NEW_IMAGE_TAG: 0.0.0
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -114,10 +115,14 @@ jobs:
           echo $NEW_IMAGE_TAG
           echo "NEW_IMAGE_TAG=$NEW_IMAGE_TAG" >> $GITHUB_ENV
 
-      # - name: Build the Docker image with new image tag
-      #   run: |
-          
-      #     docker build -t url-shortener:${{ env.LATEST_IMAGE_TAG }} .
+      - name: Build, tag and push Docker image to ECR repository
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ env.ECR_REPO_NAME }}
+          IMAGE_TAG: ${{ env.NEW_IMAGE_TAG }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # # Hello from AWS: WhoAmI
       # - name: Sts GetCallerIdentity
