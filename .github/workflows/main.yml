@@ -9,6 +9,9 @@ on:
 env:
   AWS_REGION : ap-southeast-1 # Change to reflect your Region
   AWS_ACCOUNT_ID: 271407076537 # Change to reflect your AWS Account ID
+  LATEST_TAG: v0.0.0
+  NEW_TAG: v0.0.0
+  ECR_REPO_NAME: url-shortener
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -83,8 +86,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Authenticate with AWS ECR
+        run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+
+      - name: Retrieve the latest image tag from AWS ECR
+        id: retrieve_latest_ecr_tag
+        run: |
+          REPO_NAME=${{ env.ECR_REPO_NAME }}
+          LATEST_TAG=$(aws ecr describe-images --repository-name $REPO_NAME --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)
+          echo "Latest tag is $LATEST_TAG"
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
       # - name: Build the Docker image
-      #   run: docker build -t url-shortener:0.6.7 .
+      #   run: docker build -t url-shortener:${{ env.NEW_TAG }} .
 
       # # Hello from AWS: WhoAmI
       # - name: Sts GetCallerIdentity
