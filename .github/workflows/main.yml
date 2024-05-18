@@ -110,7 +110,7 @@ jobs:
             NEW_IMAGE_TAG="1.0.0"
           else
             BASE_VERSION=$(echo ${{ env.LATEST_IMAGE_TAG }} | sed 's/^v//')
-            NEW_IMAGE_TAG="v$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')"
+            NEW_IMAGE_TAG="$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')"
           fi
           echo $NEW_IMAGE_TAG
           echo "NEW_IMAGE_TAG=$NEW_IMAGE_TAG" >> $GITHUB_ENV
