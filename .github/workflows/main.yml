@@ -12,6 +12,7 @@ env:
   LATEST_TAG: v0.0.0
   NEW_TAG: v0.0.0
   ECR_REPO_NAME: url-shortener
+  LATEST_IMAGE_TAG: 0.0.0
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -86,19 +87,37 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Authenticate with AWS ECR
-        run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # - name: Authenticate with AWS ECR
+      #   run: aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
 
       - name: Retrieve the latest image tag from AWS ECR
         id: retrieve_latest_ecr_tag
         run: |
           REPO_NAME=${{ env.ECR_REPO_NAME }}
-          LATEST_TAG=$(aws ecr describe-images --repository-name $REPO_NAME --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)
-          echo "Latest tag is $LATEST_TAG"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+          LATEST_IMAGE_TAG=$(aws ecr describe-images --repository-name $REPO_NAME --query 'sort_by(imageDetails,& imagePushedAt)[-1].imageTags[0]' --output text)
+          echo "Latest tag is $LATEST_IMAGE_TAG"
+          echo "LATEST_TAG=$LATEST_IMAGE_TAG" >> $GITHUB_ENV
+      
+      - name: Increment image tag
+        id: increment_image_tag
+        run: |
+          if [ "${{ env.LATEST_IMAGE_TAG }}" = "0.0.0" ]; then
+            NEW_IMAGE_TAG="1.0.0"
+          else
+            BASE_VERSION=$(echo ${{ env.LATEST_IMAGE_TAG }} | sed 's/^v//')
+            NEW_IMAGE_TAG="v$(echo $BASE_VERSION | awk -F. '{printf "%d.%d.%d", $1, $2, $3+1}')"
+          fi
+          echo $NEW_IMAGE_TAG
+          echo "NEW_IMAGE_TAG=$NEW_IMAGE_TAG" >> $GITHUB_ENV
 
-      # - name: Build the Docker image
-      #   run: docker build -t url-shortener:${{ env.NEW_TAG }} .
+      # - name: Build the Docker image with new image tag
+      #   run: |
+          
+      #     docker build -t url-shortener:${{ env.LATEST_IMAGE_TAG }} .
 
       # # Hello from AWS: WhoAmI
       # - name: Sts GetCallerIdentity
