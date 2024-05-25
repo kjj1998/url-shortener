@@ -130,10 +130,11 @@ jobs:
       # Generates an execution plan for Terraform
       - name: Terraform Plan
         working-directory: ./terraform-eks
-        run: terraform plan -input=false
+        run: terraform plan -var-file="variables.tfvars" -input=false
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        working-directory: ./terraform-eks
+        run: terraform apply -var-file="variables.tfvars" -auto-approve
 
     # steps:
     #   - name: Git clone the repository
