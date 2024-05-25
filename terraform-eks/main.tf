@@ -93,6 +93,7 @@ resource "kubernetes_deployment_v1" "url_shortener_deployment" {
         container {
           image   = "271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:${var.image_tag}"
           name    = "app-url-shortener"
+          image_pull_policy = "Always"
 
           resources {
             limits = {
@@ -151,7 +152,7 @@ resource "kubernetes_service_v1" "url_shortener_service" {
 
     port {
       port        = 80
-      target_port = 8080
+      target_port = 8000
       protocol    = "TCP"
     }
 
