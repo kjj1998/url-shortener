@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: url-shortener
+  name: deployment-url-shortener
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: app-url-shortener
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: app-url-shortener
+    spec:
+      serviceAccountName: rds-service-account
+      containers:
+        - name: app-url-shortener
+          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:{{IMAGE_TAG}}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
+            requests:
+              cpu: "0.1"
+              memory: "128Mi"
+          env:
+            - name: PROD
+              value: "true"
+            - name: POSTGRES_K8s_HOST
+              value: "host.docker.internal"
+            - name: REDIS_K8s_HOST
+              value: "host.docker.internal"

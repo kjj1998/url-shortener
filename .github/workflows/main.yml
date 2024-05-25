@@ -14,6 +14,8 @@ env:
   ECR_REPO_NAME: url-shortener
   LATEST_IMAGE_TAG: 0.0.0
   NEW_IMAGE_TAG: 0.0.0
+  TF_VAR_GITHUB: true
+  TF_VAR_image_tag: 0.0.0
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -111,6 +113,28 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+      - name: Update Terraform variable to be the latest image tag
+        run: |
+          echo "TF_VAR_image_tag=${{ env.NEW_IMAGE_TAG }}" >> $GITHUB_ENV
+
+      # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+      - name: Terraform init
+        working-directory: ./terraform-eks
+        run: terraform init
+
+      # Checks that all Terraform configuration files adhere to a canonical format
+      - name: Terraform Format
+        working-directory: ./terraform-eks
+        run: terraform fmt -recursive
+
+      # Generates an execution plan for Terraform
+      - name: Terraform Plan
+        working-directory: ./terraform-eks
+        run: terraform plan -input=false
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+
     # steps:
     #   - name: Git clone the repository
     #     uses: actions/checkout@v4
@@ -131,17 +155,7 @@ jobs:
     #     with:
     #       terraform_version: "1.7.0"
       
-    #   # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-    #   - name: Terraform init
-    #     run: terraform init
-
-    #   # Checks that all Terraform configuration files adhere to a canonical format
-    #   - name: Terraform Format
-    #     run: terraform fmt -check
-
-    #   # Generates an execution plan for Terraform
-    #   - name: Terraform Plan
-    #     run: terraform plan -input=false
+    
       
     #   # Test bash script
     #   - name: Test bash script
@@ -150,5 +164,4 @@ jobs:
 
     #   # On push to "master", build or change infrastructure according to Terraform configuration files
     #   # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-    #   - name: Terraform Apply
-    #     run: terraform apply -auto-approve -input=false
+    
