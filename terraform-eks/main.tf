@@ -91,7 +91,7 @@ resource "kubernetes_deployment_v1" "url_shortener_deployment" {
 
       spec {
         container {
-          image   = "271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.6.8"
+          image   = "271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:${var.image_tag}"
           name    = "app-url-shortener"
 
           resources {
