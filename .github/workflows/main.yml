@@ -138,9 +138,9 @@ jobs:
           echo ${{ env.TF_VAR_image_tag }}
           terraform plan -var-file="variables.tfvars" -input=false
 
-      # - name: Terraform Apply
-      #   working-directory: ./terraform-eks
-      #   run: terraform apply -var-file="variables.tfvars" -auto-approve
+      - name: Terraform Apply
+        working-directory: ./terraform-eks
+        run: terraform apply -var-file="variables.tfvars" -auto-approve
 
     # steps:
     #   - name: Git clone the repository
