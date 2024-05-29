@@ -9,11 +9,11 @@ terraform {
       version = "5.48.0"
     }
     kubernetes = {
-      source = "hashicorp/kubernetes"
+      source  = "hashicorp/kubernetes"
       version = "2.30.0"
     }
-}
-  
+  }
+
   backend "s3" {
     bucket         = "terraform-remote-state-url-shortener-service"
     key            = "global/s3/terraform.tfstate"
@@ -25,8 +25,8 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
-#   profile = "admin-1"
+  region  = var.aws_region
+  # profile = "admin-1"
 }
 
 ############################################################################################################
@@ -91,8 +91,8 @@ resource "kubernetes_deployment_v1" "url_shortener_deployment" {
 
       spec {
         container {
-          image   = "271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:${var.image_tag}"
-          name    = "app-url-shortener"
+          image             = "271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:${var.image_tag}"
+          name              = "app-url-shortener"
           image_pull_policy = "Always"
 
           resources {
@@ -136,7 +136,7 @@ resource "kubernetes_deployment_v1" "url_shortener_deployment" {
 
 resource "kubernetes_service_v1" "url_shortener_service" {
   metadata {
-    name = "service-url-shortener"
+    name      = "service-url-shortener"
     namespace = var.namespace
 
     annotations = {

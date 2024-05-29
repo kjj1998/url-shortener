@@ -13,10 +13,9 @@ spec:
       labels:
         app.kubernetes.io/name: app-url-shortener
     spec:
-      serviceAccountName: rds-service-account
       containers:
         - name: app-url-shortener
-          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:{{IMAGE_TAG}}
+          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.6.24
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

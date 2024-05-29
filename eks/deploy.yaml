@@ -19,10 +19,9 @@ spec:
       labels:
         app.kubernetes.io/name: app-url-shortener
     spec:
-      serviceAccountName: rds-service-account
       containers:
         - name: app-url-shortener
-          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.6.6
+          image: 271407076537.dkr.ecr.ap-southeast-1.amazonaws.com/url-shortener:0.6.24
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
@@ -142,12 +141,6 @@ spec:
                 name: service-url-shortener-auth
                 port:
                   number: 80
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: rds-service-account
-  namespace: url-shortener
 ---
 # To update the kubeconfig file for the cluster, run the following command:
 # aws eks update-kubeconfig --region region-code --name my-cluster --profile my-profile
