@@ -14,8 +14,6 @@ env:
   ECR_REPO_NAME: url-shortener
   LATEST_IMAGE_TAG: 0.0.0
   NEW_IMAGE_TAG: 0.0.0
-  TF_VAR_GITHUB: true
-  TF_VAR_image_tag: 0.0.0
 
 # Permission can be added at job level or workflow level    
 permissions:
@@ -26,6 +24,9 @@ jobs:
   build_image:
     name: 'Build image of URL shortener'
     runs-on: ubuntu-latest
+
+    outputs:
+      new_image_tag: ${{ steps.output_image_tag.outputs.new_image_tag }}
 
     defaults:
       run:
@@ -113,34 +114,9 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-      - name: Update Terraform variable to be the latest image tag
-        run: |
-          echo "TF_VAR_image_tag=${{ env.NEW_IMAGE_TAG }}" >> $GITHUB_ENV
-          echo $TF_VAR_image_tag
-
-      - name: echo tag
-        run: echo ${{ env.TF_VAR_image_tag }}
-
-      # # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
-      # - name: Terraform init
-      #   working-directory: ./terraform
-      #   run: terraform init
-
-      # # Checks that all Terraform configuration files adhere to a canonical format
-      # - name: Terraform Format
-      #   working-directory: ./terraform
-      #   run: terraform fmt -recursive
-
-      # # Generates an execution plan for Terraform
-      # - name: Terraform Plan
-      #   working-directory: ./terraform
-      #   run: |
-      #     echo ${{ env.TF_VAR_image_tag }}
-      #     terraform plan -var-file="variables.tfvars" -input=false
-
-      # - name: Terraform Apply
-      #   working-directory: ./terraform
-      #   run: terraform apply -var-file="variables.tfvars" -auto-approve
+      - name: output new image tag to be used in the next job
+        id: output_image_tag
+        run: echo "new_image_tag=${{ env.NEW_IMAGE_TAG }}" >> "$GITHUB_OUTPUT"
 
   deploy_pods:
     needs: [build_image]
@@ -151,6 +127,9 @@ jobs:
       run:
         shell: bash
         working-directory: ./terraform
+
+    env:
+      new_image_tag: ${{ needs.build_image.outputs.new_image_tag }}
 
     steps:
       - name: Git clone the repository
@@ -170,8 +149,10 @@ jobs:
           role-session-name: GitHub_to_AWS_via_FederatedOIDC
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Create .env file
-        run: echo "${{ secrets.ENV_FILE }}" > .env
+      - name: Setup Terraform with specified version on the runner
+        uses:  hashicorp/setup-terraform@v3.0.0
+        with:
+          terraform_version: "1.8.3"
       
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform init
@@ -184,8 +165,8 @@ jobs:
       # Generates an execution plan for Terraform
       - name: Terraform Plan
         run: |
-          echo ${{ env.TF_VAR_image_tag }}
-          terraform plan -var-file="variables.tfvars" -input=false
+          echo $new_image_tag
+          terraform plan -var="image_tag=$new_image_tag" -var-file="variables.tfvars" -input=false
 
       - name: Terraform Apply
-        run: terraform apply -var-file="variables.tfvars" -auto-approve
+        run: terraform apply -var="image_tag=$new_image_tag" -var-file="variables.tfvars" -auto-approve
