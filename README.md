@@ -1,2 +1,3 @@
-# url-shortener
-A cloud-native URL shortener
+# URL shortener
+
+This repository contains a FastAPI application that is a microservice for shortening URLs.

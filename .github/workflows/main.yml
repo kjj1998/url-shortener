@@ -121,54 +121,71 @@ jobs:
       - name: echo tag
         run: echo ${{ env.TF_VAR_image_tag }}
 
+      # # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+      # - name: Terraform init
+      #   working-directory: ./terraform
+      #   run: terraform init
+
+      # # Checks that all Terraform configuration files adhere to a canonical format
+      # - name: Terraform Format
+      #   working-directory: ./terraform
+      #   run: terraform fmt -recursive
+
+      # # Generates an execution plan for Terraform
+      # - name: Terraform Plan
+      #   working-directory: ./terraform
+      #   run: |
+      #     echo ${{ env.TF_VAR_image_tag }}
+      #     terraform plan -var-file="variables.tfvars" -input=false
+
+      # - name: Terraform Apply
+      #   working-directory: ./terraform
+      #   run: terraform apply -var-file="variables.tfvars" -auto-approve
+
+  deploy_pods:
+    needs: [build_image]
+    name: 'Deploy pods of the URL shortener service'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform
+
+    steps:
+      - name: Git clone the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Git user
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubAction-url-shortener # change to reflect your IAM role’s ARN
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create .env file
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+      
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform init
-        working-directory: ./terraform-eks
         run: terraform init
 
       # Checks that all Terraform configuration files adhere to a canonical format
       - name: Terraform Format
-        working-directory: ./terraform-eks
         run: terraform fmt -recursive
 
       # Generates an execution plan for Terraform
       - name: Terraform Plan
-        working-directory: ./terraform-eks
         run: |
           echo ${{ env.TF_VAR_image_tag }}
           terraform plan -var-file="variables.tfvars" -input=false
 
       - name: Terraform Apply
-        working-directory: ./terraform-eks
         run: terraform apply -var-file="variables.tfvars" -auto-approve
-
-    # steps:
-    #   - name: Git clone the repository
-    #     uses: actions/checkout@v4
-
-    #   - name: Configure AWS Credentials
-    #     uses: aws-actions/configure-aws-credentials@v4.0.1
-    #     with:
-    #       role-to-assume: arn:aws:iam::271407076537:role/GitHubAction-url-shortener #change to reflect your IAM role’s ARN
-    #       role-session-name: GitHub_to_AWS_via_FederatedOIDC
-    #       aws-region: ${{ env.AWS_REGION }}
-      
-    #   # Hello from AWS: WhoAmI
-    #   - name: Sts GetCallerIdentity
-    #     run: aws sts get-caller-identity
-
-    #   - name: Setup Terraform with specified version on the runner
-    #     uses:  hashicorp/setup-terraform@v3.0.0
-    #     with:
-    #       terraform_version: "1.7.0"
-      
-    
-      
-    #   # Test bash script
-    #   - name: Test bash script
-    #     working-directory: scripts
-    #     run: chmod +x ./run.sh && ./run.sh
-
-    #   # On push to "master", build or change infrastructure according to Terraform configuration files
-    #   # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
-    
